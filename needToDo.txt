@@ -1,0 +1,13 @@
+1st need to learn about fileHandling
+
+
+sortByDeadline()
+sortByPriority()
+
+You're still doing:
+
+t.id
+t.name
+t.completed
+
+👉 This breaks OOP encapsulation
