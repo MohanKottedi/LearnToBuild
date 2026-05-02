@@ -11,3 +11,9 @@ t.name
 t.completed
 
 👉 This breaks OOP encapsulation
+
+Clean OOP (very important for interviews)
+Comparable vs Comparator (with real clarity)
+How real companies design this (Map, Service layer)
+Convert this into Spring Boot API
+Connect to your JavaFX app

@@ -19,13 +19,11 @@ public class Task implements Comparable<Task>{
         this.priority = 4;
         this.deadline = LocalDateTime.now().plusDays(6);
     }
-    public int compareTo(Task a){
-        if(Math.abs(a.deadline.toLocalDate().toEpochDay()-this.deadline.toLocalDate().toEpochDay())<7){
-            return a.priority-this.priority;
-        }
-        else return a.deadline.getDayOfYear()-this.deadline.getDayOfYear();
+    public int compareTo(Task a) {
+        if (Math.abs(this.deadline.toLocalDate().toEpochDay() - a.deadline.toLocalDate().toEpochDay()) < 7) {
+            return a.priority - this.priority;
+        } else return  Long.compare(this.deadline.toLocalDate().toEpochDay(),a.deadline.toLocalDate().toEpochDay());
     }
-
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
