@@ -9,8 +9,8 @@ public class Main {
         taskManager.printAll();
         taskManager.update(1,"QUIZ1DSA",3,LocalDateTime.now().plusMonths(1));
         taskManager.printAll();
-        taskManager.markCompleted(2);
-        taskManager.getPendings();
-        taskManager.getCompleted();
+//        taskManager.markCompleted(2);
+//        taskManager.getPendings();
+//        taskManager.getCompleted();
     }
 }
