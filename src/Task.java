@@ -1,17 +1,21 @@
+import lombok.Builder;
+
 import java.time.LocalDateTime;
 import java.util.Objects;
 
+@Builder
 public class Task implements Comparable<Task>{
     int id;
     String name;
     int priority;
     LocalDateTime deadline;
     boolean completed;
-    public Task(int id, String name, int priority, LocalDateTime deadline) {
+    public Task(int id, String name, int priority, LocalDateTime deadline,boolean completed) {
         this.id = id;
         this.name = name;
         this.priority = priority;
         this.deadline = deadline;
+        this.completed=completed;
     }
 
     public Task(String name) {

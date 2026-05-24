@@ -6,68 +6,72 @@ import java.util.Iterator;
 
 public class TaskManager {
     private int id=0;
-    public void add(String name, int priority, LocalDateTime deadline){
-        try(BufferedWriter bw=new BufferedWriter(new FileWriter("data.csv",true))){
-            bw.write(String.format("%d,%s,%d,%s",id++,name,priority,deadline));
-            bw.newLine();
-        } catch (IOException e) {
-            System.out.println("Error while adding...");
+    ArrayList<Task> tasks;
+    public void loadTasks(){
+        tasks=new ArrayList<>();
+        try(BufferedReader bw=new BufferedReader(new FileReader("data.csv"))){
+            String a;
+            while((a=bw.readLine())!=null){
+                String para[]=a.split(",");
+                if(para.length!=5) continue;
+                tasks.add(Task.builder()
+                        .id(Integer.parseInt(para[0]))
+                        .name(para[1])
+                        .priority(Integer.parseInt(para[2]))
+                        .deadline(LocalDateTime.parse(para[3]))
+                        .build());
+            }
+            System.out.println("Loaded Sucessfulyy...");
+        }catch(IOException e){
+            System.out.println("Error while loading csv file...");
         }
+    }
+    public void saveTasks(){
+        try(BufferedWriter bw=new BufferedWriter(new FileWriter("data.csv"))){
+            bw.write("id,name,priority,deadline");
+            for(Task i:tasks){
+                bw.newLine();
+                bw.write(i.id+","+i.name+","+i.priority+","+i.deadline);
+            }
+            System.out.println("Saved Sucessfulyy...");
+        }catch(IOException e){
+            System.out.println("Error while saving...");
+        }
+    }
+    public void add(String name, int priority, LocalDateTime deadline){
+       if(tasks==null) loadTasks();
+       tasks.add(Task.builder()
+               .id(id++)
+               .name(name)
+               .priority(priority)
+               .deadline(deadline)
+               .build());
+       saveTasks();
     }
     public void delete(int id) {
-        ArrayList<String> tasks=new ArrayList<>();
-        try(BufferedReader br=new BufferedReader(new FileReader("data.csv"))){
-            String a;
-            while((a=br.readLine())!=null){
-                String obj[]=a.split(",");
-                if(Integer.compare(Integer.valueOf(obj[0]),id)==0)  continue;
-                tasks.add(a);
-            }
-            copyToCSV(tasks);
-        } catch (IOException e) {
-            System.out.println("Error while deleting...");
-        }
-    }
-    public void copyToCSV(ArrayList<String> tasks){
-        try(BufferedWriter bw=new BufferedWriter(new FileWriter("data.csv"))){
-            for(String i:tasks){
-                bw.write(i);
-                bw.newLine();
-            }
-        }catch(IOException e){
-            System.out.println("Error Changing...");
+        if(tasks==null) loadTasks();
+        for(int i=0;i<tasks.size();i++){
+            if(tasks.get(i).id==id) {tasks.remove(i);break;}
         }
     }
     public void update(int id,String name,int priority,LocalDateTime deadline){
-        ArrayList<String> tasks=new ArrayList<>();
-        try(BufferedReader br=new BufferedReader(new FileReader("data.csv"))){
-            String a;
-            while((a=br.readLine())!=null){
-                String obj[]=a.split(",");
-                if(obj[0].equals("")) continue;
-                if(Integer.compare(Integer.valueOf(obj[0]),id)==0){
-                    a=id+","+name+","+priority+","+deadline.toString();
-                }
-                tasks.add(a);
+        if(tasks==null) loadTasks();
+        for(Task task:tasks){
+            if(task.id==id){
+                task.name=name;
+                task.priority=priority;
+                task.deadline=deadline;
+                break;
             }
-            copyToCSV(tasks);
-        } catch (IOException e) {
-            System.out.println("Error while deleting...");
         }
     }
     public void printAll(){
-        try(BufferedReader bw=new BufferedReader(new FileReader("data.csv"))){
-            String a;
-            System.out.println("ID  |  Name  |   Priority   | DeadLine");
-            while((a=bw.readLine())!=null){
-                System.out.println(a.replace(",","  |  "));
-            }
-        }catch(IOException e){
-            System.out.println("Error while Reading...");
+        if(tasks==null) loadTasks();
+        Collections.sort(tasks);
+        for(Task task:tasks){
+            System.out.printf("%d  |  %s  |  %d  |  %s\n"
+                    ,task.id,task.name,task.priority,task.deadline);
         }
-//        System.out.println("Taks there :");
-//        Collections.sort(tasks);
-//        for(Task t:tasks) System.out.println(t.id+" "+t.name+" "+t.deadline+" "+t.priority);
     }
 
 //    public void markCompleted(int id){
