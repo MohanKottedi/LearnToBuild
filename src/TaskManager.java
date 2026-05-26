@@ -1,33 +1,38 @@
 import java.io.*;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 
 public class TaskManager {
-    private int id=0;
+    private int nextId=0;
     ArrayList<Task> tasks;
-    public void loadTasks(){
+    DateTimeFormatter frmt=DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
+    public void loadTasks(String path){
         tasks=new ArrayList<>();
-        try(BufferedReader bw=new BufferedReader(new FileReader("data.csv"))){
-            String a;
+        try(BufferedReader bw=new BufferedReader(new FileReader(path))){
+            String a=bw.readLine();
             while((a=bw.readLine())!=null){
                 String para[]=a.split(",");
-                if(para.length!=5) continue;
+                if(para.length!=4) continue;
+                int id=Integer.parseInt(para[0]);
                 tasks.add(Task.builder()
-                        .id(Integer.parseInt(para[0]))
+                        .id(id)
                         .name(para[1])
                         .priority(Integer.parseInt(para[2]))
                         .deadline(LocalDateTime.parse(para[3]))
                         .build());
+                nextId=nextId<id?id:nextId;
             }
             System.out.println("Loaded Sucessfulyy...");
         }catch(IOException e){
             System.out.println("Error while loading csv file...");
         }
     }
-    public void saveTasks(){
-        try(BufferedWriter bw=new BufferedWriter(new FileWriter("data.csv"))){
+    public void saveTasks(String path){
+        try(BufferedWriter bw=new BufferedWriter(new FileWriter(path))){
             bw.write("id,name,priority,deadline");
             for(Task i:tasks){
                 bw.newLine();
@@ -39,23 +44,24 @@ public class TaskManager {
         }
     }
     public void add(String name, int priority, LocalDateTime deadline){
-       if(tasks==null) loadTasks();
+        loadTasks("data.csv");
        tasks.add(Task.builder()
-               .id(id++)
+               .id(++nextId)
                .name(name)
                .priority(priority)
                .deadline(deadline)
                .build());
-       saveTasks();
+       saveTasks("data.csv");
     }
     public void delete(int id) {
-        if(tasks==null) loadTasks();
+        loadTasks("data.csv");
         for(int i=0;i<tasks.size();i++){
             if(tasks.get(i).id==id) {tasks.remove(i);break;}
         }
+        saveTasks("data.csv");
     }
     public void update(int id,String name,int priority,LocalDateTime deadline){
-        if(tasks==null) loadTasks();
+        loadTasks("data.csv");
         for(Task task:tasks){
             if(task.id==id){
                 task.name=name;
@@ -64,31 +70,45 @@ public class TaskManager {
                 break;
             }
         }
+        saveTasks("data.csv");
     }
     public void printAll(){
-        if(tasks==null) loadTasks();
+        loadTasks("data.csv");
         Collections.sort(tasks);
+        System.out.println("Pending Tasks");
         for(Task task:tasks){
             System.out.printf("%d  |  %s  |  %d  |  %s\n"
-                    ,task.id,task.name,task.priority,task.deadline);
+                    ,task.id,task.name,task.priority,task.deadline.format(frmt));
+        }
+        loadTasks("history.csv");
+        System.out.println("Completed Tasks");
+        for(Task task:tasks){
+            System.out.printf("%d  |  %s  |  %d  |  %s\n"
+                    ,task.id,task.name,task.priority,task.deadline.format(frmt));
         }
     }
 
-//    public void markCompleted(int id){
-//        for(Task t:tasks){
-//            if(t.id==id) t.completed=true;
-//        }
-//    }
-//    public void getCompleted(){
-//        System.out.println("Completed Tasks :");
-//        for(Task t:tasks)
-//            if(t.completed)
-//                System.out.println(t.id+" "+t.name+" "+t.deadline+" "+t.priority);
-//    }
-//    public void getPendings(){
-//        System.out.println("Pending Tasks :");
-//        for(Task t:tasks)
-//            if(!t.completed)
-//                System.out.println(t.id+" "+t.name+" "+t.deadline+" "+t.priority);
-//    }
+    public void markCompleted(int id){
+        loadTasks("data.csv");
+        Task complete=null;
+        for(int i=0;i<tasks.size();i++){
+            if(tasks.get(i).id==id) {complete=tasks.remove(i);break;}
+        }
+        loadTasks("history.csv");
+        tasks.add(complete);
+        saveTasks("history.csv");
+    }
+    public void getCompleted(){
+        loadTasks("history.csv");
+        printAll();
+    }
+    public void getPendings(){
+        loadTasks("data.csv");
+        Collections.sort(tasks);
+        System.out.println("Pending Tasks");
+        for(Task task:tasks){
+            System.out.printf("%d  |  %s  |  %d  |  %s\n"
+                    ,task.id,task.name,task.priority,task.deadline.format(frmt));
+        }
+    }
 }

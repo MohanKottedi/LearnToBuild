@@ -17,15 +17,9 @@ public class Task implements Comparable<Task>{
         this.deadline = deadline;
         this.completed=completed;
     }
-
-    public Task(String name) {
-        this.name = name;
-        this.priority = 4;
-        this.deadline = LocalDateTime.now().plusDays(6);
-    }
     public int compareTo(Task a) {
         if (Math.abs(this.deadline.toLocalDate().toEpochDay() - a.deadline.toLocalDate().toEpochDay()) < 7) {
-            return a.priority - this.priority;
+            return this.priority - a.priority;
         } else return  Long.compare(this.deadline.toLocalDate().toEpochDay(),a.deadline.toLocalDate().toEpochDay());
     }
     @Override
