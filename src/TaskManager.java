@@ -7,10 +7,16 @@ import java.util.Collections;
 import java.util.Iterator;
 
 public class TaskManager {
-    private int nextId=0;
-    ArrayList<Task> tasks;
-    DateTimeFormatter frmt=DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
-    public void loadTasks(String path){
+    private static int nextId=0;
+    private static ArrayList<Task> tasks;
+    private final static String data="data.csv";
+    private final static String history="history.csv";
+    private static DateTimeFormatter frmt=DateTimeFormatter.ofPattern("dd-MM-yyyy hh:mm a");
+
+    public TaskManager(){
+        loadTasks(data);
+    }
+    private static void loadTasks(String path){
         tasks=new ArrayList<>();
         try(BufferedReader bw=new BufferedReader(new FileReader(path))){
             String a=bw.readLine();
@@ -24,14 +30,14 @@ public class TaskManager {
                         .priority(Integer.parseInt(para[2]))
                         .deadline(LocalDateTime.parse(para[3]))
                         .build());
-                nextId=nextId<id?id:nextId;
+                nextId=Math.max(nextId,id);
             }
             System.out.println("Loaded Sucessfulyy...");
         }catch(IOException e){
             System.out.println("Error while loading csv file...");
         }
     }
-    public void saveTasks(String path){
+    private static void saveTasks(String path){
         try(BufferedWriter bw=new BufferedWriter(new FileWriter(path))){
             bw.write("id,name,priority,deadline");
             for(Task i:tasks){
@@ -43,25 +49,22 @@ public class TaskManager {
             System.out.println("Error while saving...");
         }
     }
-    public void add(String name, int priority, LocalDateTime deadline){
-        loadTasks("data.csv");
+    public static void add(String name, int priority, LocalDateTime deadline){
        tasks.add(Task.builder()
                .id(++nextId)
                .name(name)
                .priority(priority)
                .deadline(deadline)
                .build());
-       saveTasks("data.csv");
+       saveTasks(data);
     }
-    public void delete(int id) {
-        loadTasks("data.csv");
+    public static void delete(int id) {
         for(int i=0;i<tasks.size();i++){
             if(tasks.get(i).id==id) {tasks.remove(i);break;}
         }
-        saveTasks("data.csv");
+        saveTasks(data);
     }
-    public void update(int id,String name,int priority,LocalDateTime deadline){
-        loadTasks("data.csv");
+    public static void update(int id,String name,int priority,LocalDateTime deadline){
         for(Task task:tasks){
             if(task.id==id){
                 task.name=name;
@@ -70,45 +73,40 @@ public class TaskManager {
                 break;
             }
         }
-        saveTasks("data.csv");
-    }
-    public void printAll(){
-        loadTasks("data.csv");
-        Collections.sort(tasks);
-        System.out.println("Pending Tasks");
-        for(Task task:tasks){
-            System.out.printf("%d  |  %s  |  %d  |  %s\n"
-                    ,task.id,task.name,task.priority,task.deadline.format(frmt));
-        }
-        loadTasks("history.csv");
-        System.out.println("Completed Tasks");
-        for(Task task:tasks){
-            System.out.printf("%d  |  %s  |  %d  |  %s\n"
-                    ,task.id,task.name,task.priority,task.deadline.format(frmt));
-        }
+        saveTasks(data);
     }
 
-    public void markCompleted(int id){
-        loadTasks("data.csv");
+    public static void markCompleted(int id){
         Task complete=null;
         for(int i=0;i<tasks.size();i++){
             if(tasks.get(i).id==id) {complete=tasks.remove(i);break;}
         }
-        loadTasks("history.csv");
+        saveTasks(data);
+        loadTasks(history);
         tasks.add(complete);
-        saveTasks("history.csv");
+        saveTasks(history);
+        loadTasks(data);
     }
-    public void getCompleted(){
-        loadTasks("history.csv");
-        printAll();
-    }
-    public void getPendings(){
-        loadTasks("data.csv");
+
+    private static void print(String name){
         Collections.sort(tasks);
-        System.out.println("Pending Tasks");
+        System.out.println(name);
+        System.out.println("ID  |  NAME  |  Priority  |  DeadLine");
         for(Task task:tasks){
             System.out.printf("%d  |  %s  |  %d  |  %s\n"
                     ,task.id,task.name,task.priority,task.deadline.format(frmt));
         }
+    }
+    public void getCompleted(){
+        loadTasks(history);
+        print("Completed Tasks");
+        loadTasks(data);
+    }
+    public void getPendings(){
+        print("Pending Tasks");
+    }
+    public void printAll(){
+        getPendings();
+        getCompleted();
     }
 }
