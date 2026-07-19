@@ -16,6 +16,7 @@ public class TaskManager {
     public TaskManager(){
         loadTasks(data);
     }
+
     private static void loadTasks(String path){
         tasks=new ArrayList<>();
         try(BufferedReader bw=new BufferedReader(new FileReader(path))){
@@ -75,7 +76,6 @@ public class TaskManager {
         }
         saveTasks(data);
     }
-
     public static void markCompleted(int id){
         Task complete=null;
         for(int i=0;i<tasks.size();i++){

@@ -1,6 +1,8 @@
 import lombok.Builder;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Objects;
 
 @Builder
@@ -17,6 +19,12 @@ public class Task implements Comparable<Task>{
         this.deadline = deadline;
         this.completed=completed;
     }
+    public Urgency getUrgency(){
+        long days= ChronoUnit.DAYS.between(LocalDate.now(),this.deadline);
+        if(days<3) return Urgency.High;
+        else if(days<5) return Urgency.MEDIUM;
+        else return  Urgency.LOW;
+    }
     public int compareTo(Task a) {
         if (Math.abs(this.deadline.toLocalDate().toEpochDay() - a.deadline.toLocalDate().toEpochDay()) < 7) {
             return this.priority - a.priority;
@@ -28,6 +36,7 @@ public class Task implements Comparable<Task>{
         Task task = (Task) o;
         return id==task.id;
     }
+
 
     @Override
     public int hashCode() {
